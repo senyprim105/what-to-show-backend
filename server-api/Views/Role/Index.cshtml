@@ -1,0 +1,29 @@
+﻿@model IEnumerable<Tuple<IdentityRole,IList<User>>>
+<div class="bg-primary m-1 p-1 text-white text-center"><h4>Роли</h4></div>
+@* <div class="text-danger" asp-validation-summary="All"></div> *@
+<table class="table table-sm table-bordered">
+    <tr class="text-center"><th>№</th><th>Роль</th><th>Пользователи с ролью</th><th>Действия</th></tr>
+    @if (Model.Count() == 0)
+    {
+        <tr><td colspan="3">Ни одной роли не найдено</td></tr>
+    }
+    @{int number = 1; }
+    @foreach (var role in Model.OrderBy(it => it.Item1.Name))
+    {
+<tr>
+    <td>@(number++)</td>
+    <td class="text-center">@role.Item1.Name</td>
+    @{var data = role.Item2.Select(user => new CheckBoxListViewModel { Value = user.UserName }).ToList();}
+    <td checkbox-list="@data"></td>
+    <td>
+        <form asp-action="Delete" method="post">
+            <input type="hidden" value="@role.Item1.Id" />
+            <a asp-action="Edit" class="btn btn-sm bg-primary" asp-route-id="@role.Item1.Id">Редактировать</a>
+            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+        </form>
+    </td>
+</tr>
+    }
+</table>
+<a asp-action="Create" class="btn btn-primary">Создать</a>
+<a asp-action="Index" asp-controller="Admin" class="btn btn-secondary text-white">Назад</a>

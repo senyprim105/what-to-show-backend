@@ -1,0 +1,245 @@
+@section Links{
+<link rel="stylesheet" href="~/lib/gijgo/combined/css/gijgo.min.css" />
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+}
+@{
+    var apiDirectory = server_api.Auth.Constants.Strings.General.ApiDerictory;
+    var tableId = "person-table-id";
+}
+<h4 class="primary text-center">Person</h4>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-9">
+            <form class="form-inline">
+                <input id="searchFirstName" type="text" placeholder="First Name..."
+                    class="form-control mb-2 mr-sm-2 mb-sm-0" />
+                <input id="searchSecondName" type="text" placeholder="Second Name..."
+                    class="form-control mb-2 mr-sm-2 mb-sm-0" />
+                <input id="searchLastName" type="text" placeholder="Last Name..."
+                    class="form-control mb-2 mr-sm-2 mb-sm-0" />
+
+
+                <button id="btnSearch" type="button" class="btn btn-primary">Search</button> &nbsp;
+                <button id="btnClear" type="button" class="btn btn-secondary">Clear</button>
+            </form>
+        </div>
+        <div class="col-3">
+            <button id="btnAdd" type="button" class="btn btn-primary pull-right">Add New Record</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+        <div class="col-12">
+            <table id="@tableId"></table>
+        </div>
+    </div>
+    <a asp-action="Index" asp-controller="Admin" class="btn btn-secondary text-white mt-2">Назад</a>
+
+</div>
+
+<div id="dialog" style="display: none">
+    <input type="hidden" id="editId">
+    <form>
+        <div class="form-group">
+            <label for="editFirstName">First Name</label>
+            <input type="text" class="form-control" id="editFirstName">
+            <div class="alert alert-danger d-none" role="alert" id="validationFirstName"></div>
+        </div>
+        <div class="form-group">
+            <label for="editSecondName">Second Name</label>
+            <input type="text" class="form-control" id="editSecondName" />
+            <div class="alert alert-danger d-none" role="alert" id="validationSecondName"></div>
+        </div>
+        <div class="form-group">
+            <label for="editLastName">Last Name</label>
+            <input type="text" class="form-control" id="editLastName" />
+            <div class="alert alert-danger d-none" role="alert" id="validationLastName"></div>
+        </div>
+        <div asp-validation-summary="All"></div>
+
+        <button type="button" id="btnSave" class="btn btn-default">Save</button>
+        <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+    </form>
+</div>
+
+@section Scripts{
+
+<script type="text/javascript" charset="utf8" src="~/lib/gijgo/combined/js/gijgo.min.js"></script>
+
+
+<script type="text/javascript">
+    var grid, dialog;
+    //Вынести в отдельный модуль
+    // Места куда выводятся ошибки различных типов
+    const bindTypeError = {
+        "FirstName": "validationFirstName",
+        "SecondName": "validationSecondName",
+        "LastName": "validationLastName",
+    }
+    //Удаляется ошибки определенного типа
+    function deleteErrors(type) {
+        if (!type) return false;
+        const idContainer = bindTypeError[type]
+        if (!idContainer) return false;
+        const element = document.getElementById(bindTypeError[type]);
+        element.innerHTML = "";
+        if (!element.classList.contains("d-none"))
+            element.classList.add("d-none");
+        return true;
+    }
+    //Удаляются все ошибки из заданных мест(типов)
+    function deleteAllErrors() {
+        Object.keys(bindTypeError).forEach(key => deleteErrors(key));
+    }
+    //Добавляет ошибки в место определенное типом
+    function addNewErrors(type, messages) {
+        //Очищаем старые ошибки с таким типом
+        if (!deleteErrors(type) || !messages) return;
+
+        const element = document.getElementById(bindTypeError[type]);
+        element.classList.remove("d-none");
+
+        if (typeof messages === "string") messages = [messages];
+
+        messages.forEach(message => {
+            const p = document.createElement("p");
+            p.textContent = message
+            element.append(p);
+        });
+    }
+    //Разбирает ответ api сервера выбирает ошибки(секция errors) и запихивает их в нужные места
+    // Так как при ошибки валидации возвращается ошибки в секции errors то при добавлении ошибок вручную их нужно передовать 
+    // с помощью ValidationProblem(ModelState)
+    function getErrors(data) {
+        if (data) {
+            const errorData = data.responseJSON;
+            if (errorData) {
+                // ошибки вследствие валидации по атрибутам
+                if (errorData.errors) {
+                    Object.keys(errorData.errors).forEach(key => addNewErrors(key, errorData.errors[key]))
+                }
+            }
+        }
+    }
+
+
+
+    function Save() {
+        var record = {
+            id: $('#editId').val() || "0",
+            firstName: $('#editFirstName').val(),
+            secondName: $('#editSecondName').val(),
+            lastName: $('#editLastName').val(),
+        };
+        $.ajax({
+            url: `/@apiDirectory/persons/${record.id !== "0" ? record.id : ''}`,
+            data: JSON.stringify(record),
+            method: (record.id === "0" ? 'POST' : 'PUT'),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        })
+            .fail(function (data) { getErrors(data) })
+            .done(function () {
+                dialog.close();
+                grid.reload();
+            })
+    }
+    function Delete(e) {
+        if (confirm('Are you sure deleting row?')) {
+            $.ajax({
+                url: '/@apiDirectory/persons/' + e.data.id, method: 'DELETE',
+            })
+                .done(function () {
+                    grid.reload();
+                })
+                .fail(function (data) {
+                    getErrors(data)
+                });
+        }
+    }
+    $(document).ready(function () {
+        grid = $('#@tableId').grid({
+            primaryKey: 'id',
+            dataSource: '/@apiDirectory/persons',
+            uiLibrary: 'bootstrap4',
+            primaryKey: 'id',
+
+            columns: [
+                { field: 'firstName', title: " First Name", sortable: true, },
+                { field: 'secondName', title: 'Second Name', sortable: true, },
+                { field: 'lastName', title: 'Last Name', sortable: true, },
+                { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+                { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+            ],
+            pager: { limit: 5, sizes: [2, 5, 10, 20] }
+        });
+
+        /* grid.on('rowDataChanged', function (e, id, record) {
+             // Clone the record in new object where you can format the data to format that is supported by the backend.
+             var data = $.extend(true, {}, record);
+             // Post the data to the server
+
+             $.ajax({
+                 url: '/@apiDirectory/persons/' + id,
+                 data: JSON.stringify(data),
+                 method: 'PUT',
+                 contentType: "application/json; charset=utf-8",
+                 dataType: "json",
+                 //headers: { Authorization: $`Bearer ${sessionStorage.getItem("token")}` },
+             })
+                 .fail(function (data) {
+                     getErrors(data);
+                 });
+
+         });
+         grid.on('rowRemoving', function (e, $row, id, record) {
+             if (confirm('Are you sure deleteing row?')) {
+                 $.ajax({
+                     url:
+                         '/@apiDirectory/persons/' + id, method: 'DELETE',
+                     //headers: { Authorization: $`Bearer ${sessionStorage.getItem("token")}` },
+                 })
+                     .done(function () {
+                         grid.reload();
+                     })
+                     .fail(function (data) {
+                         getErrors(data);
+                     });
+             }
+         });*/
+
+        dialog = $('#dialog').dialog({
+            uiLibrary: 'bootstrap4',
+            iconsLibrary: 'fontawesome',
+            autoOpen: false,
+            resizable: false,
+            modal: true
+        });
+        $('#btnAdd').on('click', function () {
+            deleteAllErrors();//Удаляем ошибки из модального окна
+            $('#editId').val('');
+            $('#editFirstName').val('');
+            $('#editSecondName').val('');
+            $('#editLastName').val('');
+            dialog.open('Add Person');
+        });
+        function Edit(e) {
+            deleteAllErrors();
+            $('#editId').val(e.data.id);
+            $('#editFirstName').val(e.data.record.firstName);
+            $('#editSecondName').val(e.data.record.secondName);
+            $('#editLastName').val(e.data.record.lastName);
+            dialog.open('Edit Person');
+        }
+        $('#btnSave').on('click', Save);
+        $('#btnCancel').on('click', function () {
+            deleteAllErrors();
+            dialog.close();
+        });
+        $('#btnSearch').on('click', function () {
+            grid.reload({ firstName: $('#searchFirstName').val(), secondName: $('#searchSecondName').val(), lastName: $('#searchLastName').val() });
+        });
+
+    });
+</script>
+}

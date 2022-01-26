@@ -1,0 +1,10 @@
+﻿@model string
+<div class="bg-primary m-1 p-1 text-white text-center"><h4>Создать роль</h4></div>
+<form method="post" asp-action="Create">
+    <div class="form-group">
+        <label for="name">Имя роли</label>
+        <input  name="name" id="name" value="@Model" class="form-control" required/>
+    </div>
+        <button type="submit" class="btn btn-primary">Создать</button>
+        <a asp-action="Index" class="btn btn-secondary">Отменить</a>
+</form>

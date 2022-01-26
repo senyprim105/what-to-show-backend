@@ -1,0 +1,103 @@
+@section Links{
+<link rel="stylesheet" href="~/lib/datatables.net/dataTables.bootstrap.min.css" />
+<link rel="stylesheet" href="~/lib/datatables.net/responsive.bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/gliph.css" />
+}
+@{
+    var tableId = "person-table";
+    var addButtonId = "add-person-button";
+}
+<div class="bg-primary m-1 p-1 text-white text-center">
+    <h4>Person</h4>
+</div>
+<div class="row">
+    <div class="col-md-12 m-b-20">
+        <input type="button" value="Add row" id="@addButtonId" class="btn btn-info pull-right">
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table id="@tableId" class="table table-bordered table-striped" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>First Name</th>
+                    <th>Second Name</th>
+                    <th>LastName</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+<script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+
+<script type="text/ecmascript" src="~/lib/jquery-tabledit-1.2.7/jquery.tabledit.js"></script>
+<script>{
+        $(document).ready(function () {
+            const dataTable = $('#person-table').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    url: "/server-api/persons",
+                    type: "GET",
+                    datatype: "json",
+                    dataSrc: ""
+                },
+                "columns": [
+                    { "data": "id", "name": "Id", "autoWidth": true },
+                    { "data": "firstName", "name": "First Name", "autoWidth": true },
+                    { "data": "secondName", "name": "Second Name", "autoWidth": true },
+                    { "data": "lastName", "name": "Last Name", "autoWidth": true },
+                ]
+            });
+
+
+            $('#person-table').on('draw.dt', function () {
+                $('#person-table').Tabledit({
+
+                    dataType: 'json',
+                    url: "/server-api/person",
+                    deletemethod: "post",
+                    editmethod: "post",
+                    columns: {
+                        identifier: [0, 'id'],
+                        editable: [[1, 'first-name'], [2, 'second-name'], [3, 'last-name']],
+                    },
+                    restoreButton: false,
+                    onSuccess: function (data, textStatus, jqXHR) {
+                        if (data.action == 'delete') {
+                            $('#' + data.id).remove();
+                            $('#person-table').DataTable().ajax.reload();
+                        }
+                    },
+                    onAjax: function (action, serialize) {
+                        searchParams = new URLSearchParams(serialize);
+                        const id = searchParams.get("id");
+                        if (action === 'delete' && id) {
+                            $.ajax("server-api/persons/" + id, {
+                                type: "DELETE",
+                                success: $('#person-table').DataTable().ajax.reload(),
+                            })
+                            return false;
+                        }
+                    }
+                });
+            });
+            $(`#@addButtonId`).on('click', function () {
+                var table = $('#@tableId');
+                var body = $('#@tableId tbody');
+                var nextId = 0
+                table.prepend($('' + nextId + ''));
+                table.Tabledit('update');
+            })
+        })
+    }
+</script>
+}

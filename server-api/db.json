@@ -1,0 +1,11 @@
+{
+  "DefaultAccount": {
+    "Name": "admin",
+    "Email": "admin@mail.ru",
+    "Password": "admin",
+    "Role": "admins"
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\MSSQLLocalDB;Database=WhatToWatch;Trusted_Connection=True;MultipleActiveResultSets=true"
+  }
+}

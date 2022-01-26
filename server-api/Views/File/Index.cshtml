@@ -1,0 +1,45 @@
+@model IEnumerable<FileApp>
+<div class="bg-primary m-1 p-1 text-white text-center">
+    <h4>Файлы</h4>
+</div>
+@* <div class="text-danger" asp-validation-summary="All"></div> *@
+<table class="table table-sm table-bordered">
+    @if (Model == null || Model.Count() == 0)
+    {
+        <tr>
+            <td colspan="5"><h5>Ни одного файла не найдено</h5></td>
+        </tr>
+
+    }
+    else
+    {
+        <tr class="text-center">
+            <th>№</th>
+            <th>Тип</th>
+            <th>Кто загрузил</th>
+            <th>Имя файла</th>
+            <th>Откуда загружен</th>
+            <th>Действия</th>
+        </tr>
+        int number = 1;
+        @foreach (var file in Model.OrderBy(it => it.Type).ThenBy(it => it.Id))
+        {
+            <tr>
+                <td>@(number++)</td>
+                <td>@(file.Type)</td>
+                <td>@(file?.User?.UserName??"Отсутствует")</td>
+                <td>@(file.OldName)</td>
+                <td>@(file.OldPath)</td>
+                <td>
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" name="id" value="@file.Id" />
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    }
+</table>
+
+<a asp-action="Create" class="btn btn-primary">Создать</a>
+<a asp-action="Index" asp-controller="Admin" class="btn btn-secondary text-white">Назад</a>

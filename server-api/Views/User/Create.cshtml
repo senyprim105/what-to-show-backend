@@ -1,0 +1,42 @@
+﻿@model UserRegisterViewModel 
+@inject RoleManager<IdentityRole> roleManager
+@{
+    var roles = roleManager.Roles.Select(role=>new CheckBoxListViewModel{
+                Name="Roles",
+                Enabled=true,
+                Checked = false,
+                Value = role.Name,
+                Caption = role.Name,
+                Visible = true,
+            });
+}
+<div class=" bg-primary m-1 p-1 text-white text-center"><h4>Создание пользователя</h4></div>
+<form method="post" asp-action="Create">
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" type="email" />
+    </div>
+    <div class="form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" type="password" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="PasswordConfirm"></label>
+        <input asp-for="PasswordConfirm" class="form-control" type="password" />
+    </div>
+    <div class="bg-primary p-1 m-1 text-white text-center"><h5>В каких группах состоит пользователь</h5></div>
+    <div class="form-group" checkbox-list="@roles"
+    checkbox-list-item-tag = "div" checkbox-list-item-class = "form-check form-check-inline"
+    checkbox-list-checkbox-class="form-check-input"
+    checkbox-list-label-class="form-check-input"
+    >
+    </div>
+
+    <button type="submit" class="btn btn-primary text-white">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

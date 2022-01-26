@@ -1,0 +1,47 @@
+﻿@model IList<Tuple<User,IList<string>>>
+<div class="bg-primary m-1 p-1 text-white text-center"><h4>User Accounts</h4></div>
+@* <div asp-validation-summary="All" class="text-danger"></div> *@
+<table class=" table table-sm table-bordered">
+    <tr>
+        <th>№</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Groups</th>
+        <th>Actions</th>
+    </tr>
+    @if (Model.Count() == 0)
+    {
+        <tr><td colspan="5" class="text-center">No User Acounts</td></tr>
+    }
+    else
+    {
+        int number = 1;
+        foreach (var item in Model)
+        {
+            var user = item.Item1;
+            var roles = item.Item2;
+            <tr>
+                <td>@(number++)</td>
+                <td>@user.UserName</td>
+                <td>@user.Email</td>
+                @{var data = roles.Select(role => new CheckBoxListViewModel 
+                { 
+                    Value = role, 
+                }).ToList();}
+                <td checkbox-list="@data"
+                checkbox-list-label-class="ml-1"
+                
+                ></td>
+                <td>
+                    <form method="post"  asp-action="Delete">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <a asp-action="Edit" asp-controller="User" asp-route-id="@(user.Id)" class="btn btn-sm btn-primary">Редактировать</a>
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    }
+</table>
+<a class="btn btn-primary" asp-action="Create">Create</a>
+<a class="btn btn-secondary" asp-action="Index" asp-controller="Admin">Назад</a>

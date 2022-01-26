@@ -1,0 +1,163 @@
+@model IEnumerable<Genre>
+@section Links{
+<link rel="stylesheet" href="~/lib/datatables.net/dataTables.bootstrap.min.css" />
+<link rel="stylesheet" href="~/lib/datatables.net/responsive.bootstrap.min.css" />
+}
+<div class="bg-primary m-1 p-1 text-white text-center">
+    <h4>Person</h4>
+</div>
+<table class="table table-striped table-bordered" id="person-table" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>FirstName</th>
+            <th>SecondName</th>
+            <th>LastName</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+<a class="btn btn-primary" asp-action="Create">Create</a>
+<a class="btn btn-secondary" asp-action="Index" asp-controller="Admin">Назад</a>
+@section Scripts{
+<script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8"
+    src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+
+<script>
+   
+    const tableId = "person-table";
+
+
+
+    $(document).ready(function () {
+        console.log('Start script');
+        var dataTable = $(`#${tableId}`).DataTable({
+            "processing": true,
+            "serverSide": true,
+
+            "ajax": {
+                "url": "/server-api/persons",
+                "type": "POST",
+                "datatype": "json",
+                "dataSrc": ""
+            },
+            "columnDefs": [{
+                "targets": [0],
+                "visible": false,
+                "searchable": false
+            }],
+            "columns": [
+                { "data": "id", "name": "Id", "autoWidth": true },
+                { "data": "firstName", "name": "First Name", "autoWidth": true },
+                { "data": "secondName", "name": "Second Name", "autoWidth": true },
+                { "data": "lastName", "name": "Last Name", "autoWidth": true },
+                {
+                    //edit button creation    
+                    render: function (data, type, row) {
+                        return createButton('edit', row.id);
+                    }
+                },
+                {
+                    //delete button creation    
+                    render: function (data, type, row) {
+                        return createButton('delete', row.id);
+                    }
+                }
+            ]
+        });
+
+    });
+    function createButton(buttonType, rowID) {
+        const buttonText = buttonType == "edit" ? "Edit" : "Delete";
+        return '<button class="' + buttonType + '" type="button">' + buttonText + '</button>';
+    }
+
+
+    function DeleteData(Id) {
+        if (confirm("Are you sure you want to delete ...?")) {
+            Delete(Id);
+        } else {
+            return false;
+        }
+    }
+
+
+    function Delete(CustomerID) {
+        var url = '@Url.Content("~/")' + "server-api/person/Delete";
+
+        $.post(url, { ID: CustomerID }, function (data) {
+            if (data) {
+                oTable = $('#example').DataTable();
+                oTable.draw();
+            } else {
+                alert("Something Went Wrong!");
+            }
+        });
+    }
+
+     function fnResetControls() {    
+        var openedTextBox = $(`#${tableId}`).find('input');    
+        $.each(openedTextBox, function (k, $cell) {    
+            $(openedTextBox[k]).closest('td').html($cell.value);    
+        })    
+    }    
+    function fnCreateTextBox(value, fieldprop) {
+        return '<input data-field="' + fieldprop + '" type="text" value="' + value + '" ></input>';
+    }
+    function fnUpdateDataTableValue($inputCell, value) {
+        var dataTable = $(`#${tableId}`).DataTable();
+        var rowIndex = dataTable.row($($inputCell).closest('tr')).index();
+        var fieldName = $($inputCell).attr('data-field');
+        dataTable.rows().data()[rowIndex][fieldName] = value;
+    }
+
+
+    $(`#${tableId}`).on('click', 'tbody td .edit', function (e) {
+        fnResetControls();
+        var dataTable = $(`#${tableId}`).DataTable();
+        var clickedRow = $($(this).closest('td')).closest('tr');
+        $(clickedRow).find('td').each(function () {
+            // do your cool stuff    
+            if ($(this).hasClass('editable')) {
+                if ($(this).hasClass('text')) {
+                    var html = fnCreateTextBox($(this).html(), 'name');
+                    $(this).html($(html))
+                }
+            }
+        });
+        $(`#${tableId} tbody tr td .update`).removeClass('update').addClass('edit').html('Edit');
+        $(`#${tableId} tbody tr td .cancel`).removeClass('cancel').addClass('delete').html('Delete');
+        $(clickedRow).find('td .edit').removeClass('edit').addClass('update').html('Update');
+        $(clickedRow).find('td .delete').removeClass('delete').addClass('cancel').html('Cancel');
+    });
+
+
+    $(`#${tableId}`).on('click', 'tbody td .cancel', function (e) {
+        fnResetControls();
+        $(`#${tableId} tbody tr td .update`).removeClass('update').addClass('edit').html('Edit');
+        $(`#${tableId} tbody tr td .cancel`).removeClass('cancel').addClass('delete').html('Delete');
+    });
+
+    $(`#${tableId}`).on('click', 'tbody td .update', function (e) {
+
+        var openedTextBox = $(`#${tableId}`).find('input');
+        $.each(openedTextBox, function (k, $cell) {
+            fnUpdateDataTableValue($cell, $cell.value);
+            $(openedTextBox[k]).closest('td').html($cell.value);
+        })
+
+        $(`#${tableId} tbody tr td .update`).removeClass('update').addClass('edit').html('Edit');
+        $(`#${tableId} tbody tr td .cancel`).removeClass('cancel').addClass('delete').html('Delete');
+    });
+
+
+
+
+</script>
+}

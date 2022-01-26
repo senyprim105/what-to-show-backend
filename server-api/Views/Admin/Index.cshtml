@@ -1,0 +1,44 @@
+﻿@model object
+<div class="bg-primary m-1 p-1 text-center text-white"><h4>Обыекты администрирования</h4></div>
+
+<table class="table table-sm table-bordered">
+    <tr>
+        <th>№</th>
+        <th>Объект</th>
+        <th>Описание</th>
+    </tr>
+    <tr>
+        <td>1.</td>
+        <td><a asp-controller="User" asp-action="Index" class="btn btn-primary">Учетные записи</a></td>
+        <td><p>Создание удаление редактирование учетных записей</p></td>
+    </tr>
+    <tr>
+        <td>2.</td>
+        <td><a asp-controller="Role" asp-action="Index" class="btn btn-primary">Роли</a></td>
+        <td><p>Создание удаление редактирование ролей</p></td>
+    </tr>
+    <tr>
+        <td colspan="3">Управление таблицами:</td>
+    </tr>
+
+    <tr>
+        <td>3.</td>
+        <td><a asp-controller="File" asp-action="Index" class="btn btn-primary">Файлы</a></td>
+        <td><p>Редактирование таблицы файлов</p></td>
+    </tr>
+    <tr>
+        <td>4.</td>
+        <td><a asp-controller="Person" asp-action="Index" class="btn btn-primary">Персонал</a></td>
+        <td><p>Редактирование таблицы людей</p></td>
+    </tr>
+    <tr>
+        <td>5.</td>
+        <td><a asp-controller="Genre" asp-action="Index" class="btn btn-primary">Жанры</a></td>
+        <td><p>Редактирование таблицы жанров</p></td>
+    </tr>
+     <tr>
+        <td>7.</td>
+        <td><a asp-controller="Movie" asp-action="Index" class="btn btn-primary">Фильмы</a></td>
+        <td><p>Редактирование таблицы фильмов Не сделано</p></td>
+    </tr>
+</table>

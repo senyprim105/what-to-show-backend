@@ -1,0 +1,11 @@
+﻿@model IdentityRole
+<div class="bg-primary m-1 p-1 text-white text-center"><h4>Изменить имя роль</h4></div>
+<form method="post" asp-action="Edit">
+    <div class="form-group">
+        <input asp-for="@Model.Id" type="hidden" />
+        <label asp-for="@Model.Name">Имя роли</label>
+        <input name="name" id="name" value="@Model" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Изменить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отменить</a>
+</form>

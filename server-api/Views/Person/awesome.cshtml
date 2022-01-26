@@ -1,0 +1,45 @@
+@using Microsoft.AspNetCore
+
+@section Links{
+<script src="~/lib/jquery/jquery.min.js"></script>
+}
+@{
+    var gridId = "DinnersInlineCrudGrid";
+}
+<div class="bar">
+   
+</div>
+
+@(Html.Awe().Grid(gridId)
+.Mod(o => o.Main(false).InlineEdit(Url.Action("Create"), Url.Action("Edit"), rowClickEdit: true))
+.Url("/server-api/persons")
+.Parent("txtSearch2", "search")
+.Height(350)
+.Resizable()
+.Reorderable()
+.Attr("data-syncg", "dinner")
+.Columns(
+new Column { Bind = "Id", Width = 75 }
+.Mod(o => o.InlineId()),
+
+new Column { Bind = "FirstName" }
+.Mod(o => o.Inline(Html.Awe().TextBox("firstName"))), // simple textbox
+
+new Column { Bind = "SecondName", Width = 160 }
+.Mod(o => o.Inline(Html.Awe().TextBox("secondName"))), // simple textbox
+
+new Column { Bind = "LastName", Width = 160 }
+.Mod(o => o.Inline(Html.Awe().TextBox("lastName")))));
+
+
+
+
+
+@section Scripts{
+<script src="~/lib/awesome/js/AwesomeMvc.js"></script>
+<script src="~/lib/awesome/js/awem.js"></script>
+<script src="~/lib/awesome/js/utils.js"></script>
+@Html.Awe().Init()
+@Html.AntiForgeryToken()
+
+}

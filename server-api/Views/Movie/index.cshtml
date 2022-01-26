@@ -1,0 +1,44 @@
+@model IEnumerable<Movie>
+<div class="bg-primary m-1 p-1 text-white text-center">
+    <h4>Фильмы</h4>
+</div>
+<table class="table table-sm table-bordered">
+    <tr class="text-center">
+        <th>№</th>
+        <th>Название фильма</th>
+        <th>Poster</th>
+        <th>Video</th>
+        <th>Actions</th>
+    </tr>
+    @if (Model.Count() == 0)
+    {
+        <tr>
+            <td colspan="5" class="text-center">Ни одного фильма не найденно</td>
+        </tr>
+    }
+    @{
+        int number = 1; }
+    @foreach (var movie in Model)
+    {
+        <tr>
+            <td>@(number++)</td>
+            <td class="text-center">@movie.Name</td>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#poster@(movie.Id)">
+                Poster
+            </button>
+
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#movie@(movie.Id)">
+                Movie
+            </button>
+            <td>
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" value="@(movie.Id)" />
+                    <a asp-action="Edit" class="btn btn-sm bg-primary" asp-route-id="@(movie.Id)">Редактировать</a>
+                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<a asp-action="Create" class="btn btn-primary">Создать</a>
+<a asp-action="Index" asp-controller="Admin" class="btn btn-secondary text-white">Назад</a>

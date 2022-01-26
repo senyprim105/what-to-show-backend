@@ -1,0 +1,219 @@
+@section Links{
+<link rel="stylesheet" href="~/lib/gijgo/combined/css/gijgo.min.css" />
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+}
+@{
+    var apiDirectory = server_api.Auth.Constants.Strings.General.ApiDerictory;
+    var tableId = "person-table-id";
+}
+<h4 class="primary text-center" >Genres</h4>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-9">
+            <form class="form-inline">
+                <input id="searchName" type="text" placeholder="Genre..." class="form-control mb-2 mr-sm-2 mb-sm-0" />
+                
+                <button id="btnSearch" type="button" class="btn btn-primary">Search</button> &nbsp;
+                <button id="btnClear" type="button" class="btn btn-secondary"
+                onclick="{
+                    document.getElementById('searchName').value='';
+                    document.getElementById('btnSearch').dispatchEvent(new Event('click'));
+                }"
+                >Clear</button>
+            </form>
+        </div>
+        <div class="col-3">
+            <button id="btnAdd" type="button" class="btn btn-primary pull-right">Add New Record</button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+        <div class="col-12">
+            <table id="@tableId"></table>
+        </div>
+    </div>
+<a asp-action="Index" asp-controller="Admin" class="btn btn-secondary text-white mt-3">Назад</a>
+
+</div>
+
+<div id="dialog" style="display: none">
+    <input type="hidden" id="editId" />
+    <form>
+        <div class="alert alert-danger d-none" role="alert" id="validation-all"></div>
+        <div class="form-group">
+            <label for="editName">Genre</label>
+            <input type="text" class="form-control" id="editName">
+        </div>
+        <div class="form-group">
+            <label for="editCaption">Caption</label>
+            <input type="text" class="form-control" id="editCaption">
+        </div>
+        <div class="form-group">
+            <label for="editDescription">Description</label>
+            <input type="text" class="form-control" id="editDescription" />
+        </div>
+
+        <button type="button" id="btnSave" class="btn btn-default">Save</button>
+        <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+    </form>
+</div>
+
+@section Scripts{
+
+
+
+<script type="text/javascript" charset="utf8" src="~/lib/gijgo/combined/js/gijgo.min.js"></script>
+
+
+<script type="text/javascript">
+    const API_DIRECTORY=`/@(apiDirectory)/genres`
+
+    const TABLE = {
+        //Связываем id элементов формы с полями данных
+        fields: {
+            "editId": "id",
+            "editName": "name",
+            "editDescription": "description"
+        }
+    }
+
+
+    var grid, dialog;
+    //Вынести в отдельный модуль
+    // Места куда выводятся ошибки различных типов
+    const bindTypeError = {
+        "All": "validation-all",
+    }
+    //Удаляется ошибки определенного типа
+    function deleteErrors(type) {
+        if (!type) return false;
+        const idContainer = bindTypeError[type]
+        if (!idContainer) return false;
+        const element = document.getElementById(bindTypeError[type]);
+        element.innerHTML = "";
+        if (!element.classList.contains("d-none"))
+            element.classList.add("d-none");
+        return true;
+    }
+    //Удаляются все ошибки из заданных мест(типов)
+    function deleteAllErrors() {
+        Object.keys(bindTypeError).forEach(key => deleteErrors(key));
+    }
+    //Добавляет ошибки в место определенное типом
+    function addNewErrors(type, messages) {
+        //Очищаем старые ошибки с таким типом
+        if (!deleteErrors(type) || !messages) return;
+
+        const element = document.getElementById(bindTypeError[type]);
+        element.classList.remove("d-none");
+
+        if (typeof messages === "string") messages = [messages];
+
+        messages.forEach(message => {
+            const p = document.createElement("p");
+            p.textContent = message
+            element.append(p);
+        });
+    }
+    //Разбирает ответ api сервера выбирает ошибки(секция errors) и запихивает их в нужные места
+    // Так как при ошибки валидации возвращается ошибки в секции errors то при добавлении ошибок вручную их нужно передовать 
+    // с помощью ValidationProblem(ModelState)
+    function getErrors(data) {
+        if (data) {
+            const errorData = data.responseJSON;
+            if (errorData) {
+                // ошибки вследствие валидации по атрибутам
+                if (errorData.errors) {
+                    Object.keys(errorData.errors).forEach(key => addNewErrors(key, errorData.errors[key]))
+                }
+            }
+        }
+    }
+
+
+    function Edit(e) {
+        deleteAllErrors();
+        //Object.keys(TABLE.fields).forEach(id=>$(`#${id}`).val(e.data.[TABLE.fields[id]]));
+        $('#editId').val(e.data.id);
+        $('#editName').val(e.data.record.name);
+        $('#editCaption').val(e.data.record.caption);
+        $('#editDescription').val(e.data.record.description);
+        dialog.open('Edit Person');
+    }
+    function Save() {
+        var record = {
+            id: $('#editId').val() || "0",
+            name: $('#editName').val(),
+            caption: $('#editCaption').val(),
+            description: $('#editDescription').val(),
+        };
+        $.ajax({
+            url: `${API_DIRECTORY}/${record.id !== "0" ? record.id : ''}`,
+            data: JSON.stringify(record),
+            method: (record.id === "0" ? 'POST' : 'PUT'),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        })
+            .fail(function (data) { getErrors(data) })
+            .done(function () {
+                dialog.close();
+                grid.reload();
+            })
+    }
+    function Delete(e) {
+        if (confirm('Are you sure deleting row?')) {
+            $.ajax({
+                url: `${API_DIRECTORY}/${e.data.id}`,
+                method: 'DELETE',
+            })
+                .done(function () {
+                    grid.reload();
+                })
+                .fail(function (data) {
+                    getErrors(data)
+                });
+        }
+    }
+    $(document).ready(function () {
+        grid = $('#@tableId').grid({
+            primaryKey: 'id',
+            dataSource: API_DIRECTORY,
+            uiLibrary: 'bootstrap4',
+
+            columns: [
+                { field: 'name', title: "Genre", sortable: true, },
+                { field: 'caption', title: "Caption", sortable: true, },
+                { field: 'description', title: 'Description', sortable: true, },
+                { title: '', field: 'Edit', width: 42, type: 'icon', icon: 'fa fa-pencil', tooltip: 'Edit', events: { 'click': Edit } },
+                { title: '', field: 'Delete', width: 42, type: 'icon', icon: 'fa fa-remove', tooltip: 'Delete', events: { 'click': Delete } }
+            ],
+            pager: { limit: 5, sizes: [2, 5, 10, 20] }
+        });
+
+        dialog = $('#dialog').dialog({
+            uiLibrary: 'bootstrap4',
+            iconsLibrary: 'fontawesome',
+            autoOpen: false,
+            resizable: false,
+            modal: true
+        });
+        $('#btnAdd').on('click', function () {
+            deleteAllErrors();//Удаляем ошибки из модального окна
+            $('#editId').val('');
+            $('#editName').val('');
+             $('#editCaption').val('');
+            $('#editDescription').val('');
+            dialog.open('Add Person');
+        });
+        $('#btnSave').on('click', Save);
+        $('#btnCancel').on('click', function () {
+            deleteAllErrors();
+            dialog.close();
+        });
+
+         $('#btnSearch').on('click', function () {
+            grid.reload({ name: $('#searchName').val() });
+        });
+    });
+</script>
+}

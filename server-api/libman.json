@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "twitter-bootstrap@4.6.0",
+      "destination": "wwwroot\\lib\\twitter-bootstrap"
+    },
+    {
+      "library": "jquery@3.6.0",
+      "destination": "wwwroot\\lib\\jquery"
+    },
+    {
+      "library": "datatables.net@1.10.24",
+      "destination": "wwwroot\\lib\\datatables.net"
+    },
+    {
+      "library": "datatables.net-bs@1.10.24",
+      "destination": "wwwroot\\lib\\datatables.net"
+    },
+    {
+      "library": "datatables.net-responsive@2.2.7",
+      "destination": "wwwroot\\lib\\datatables.net"
+    },
+    {
+      "library": "datatables.net-dt@1.10.24",
+      "destination": "wwwroot\\lib\\datatables.net"
+    },
+    {
+      "library": "datatables.net-responsive-bs@2.2.7",
+      "destination": "wwwroot\\lib\\datatables.net"
+    },
+    {
+      "library": "jqgrid@5.5.4",
+      "destination": "wwwroot\\lib\\jqgrid"
+    },
+    {
+      "library": "gijgo@1.9.13",
+      "destination": "wwwroot\\lib\\gijgo"
+    },
+    {
+      "library": "bootstrap-select@1.13.18",
+      "destination": "wwwroot\\lib\\bootstrap-select"
+    },
+    {
+      "library": "popper.js@2.9.2",
+      "destination": "wwwroot\\lib\\popper.js"
+    },
+    {
+      "library": "select2@4.0.13",
+      "destination": "wwwroot\\lib\\select2"
+    },
+    {
+      "library": "select2-bootstrap-theme@0.1.0-beta.10",
+      "destination": "wwwroot\\lib\\select2-bootstrap-theme"
+    },
+    {
+      "library": "bootstrap-colorpicker@3.3.0",
+      "destination": "wwwroot\\lib\\bootstrap-colorpicker"
+    }
+  ]
+}
